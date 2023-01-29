@@ -1,0 +1,6 @@
+go run main.go
+
+npm install
+
+go build main.go
+

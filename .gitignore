@@ -1,3 +1,4 @@
 ﻿main.exe
 go.sum
 data*.json
+.env
