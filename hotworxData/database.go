@@ -1,5 +1,5 @@
 // ./database/database.go
-package database
+package hotworxData
 
 import (
 	"context"

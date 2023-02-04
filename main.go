@@ -7,52 +7,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/bretcline/Hotworx_Go/hotworxData"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type LeaderboardResults struct {
-	Status      bool          `bson:"status"`
-	Message1    string        `bson:"message1"`
-	Leaderboard []Leaderboard `bson:"leaderboard"`
-	Date        time.Time     `bson:"Date,omitempty"`
-}
-
-type Leaderboard struct {
-	User_Id            string `bson:"user_id"`
-	TotalCaloriesBurnt string `bson:"TotalCaloriesBurnt"`
-	Reward             string `bson:"reward"`
-	Username           string `bson:"username"`
-	Selft_Entry        string `bson:"selft_entry"`
-}
-
-type DailyResults struct {
-	Status           bool               `bson:"status"`
-	Message          string             `bson:"message"`
-	Summary          []Summary          `bson:"summary"`
-	ClassesCompleted []ClassesCompleted `bson:"classes_completed"`
-
-	Date time.Time `bson:"Date,omitempty"`
-}
-
-type Summary struct {
-	IsometricCalories string `bson:"isometric_calories"`
-	HIITCalories      string `bson:"hiit_calories"`
-	AfterBurn         string `bson:"after_burn"`
-}
-
-type ClassesCompleted struct {
-	Type         string `bson:"type"`
-	BurnCalories string `bson:"burn_calories"`
-}
 
 func main() {
 
@@ -67,22 +35,71 @@ func main() {
 		hotworx_api = os.Getenv("HOTWORX_API")
 	)
 
+	//DataMigration(user, password)
+
 	data, success := GetDailyLeaderboard(hotworx_api, true)
 	if success {
+		fmt.Println(data)
 		// TODO: Do something about the error
 		WriteToDB(user, password, "Leaderboard_RAW", data)
+
+		y := make([]interface{}, len(data.Leaderboard))
+		for i, v := range data.Leaderboard {
+			v.Date = data.Date
+			y[i] = v
+		}
+		WriteMultipleToDB(user, password, "Leaderboard", y)
 	}
 
-	summary, success := GetDailySummary(hotworx_api, true)
-	if success {
-		// TODO: Do something about the error
-		WriteToDB(user, password, "DailySummary_RAW", summary)
-	}
+	// summary, success := GetDailySummary(hotworx_api, true)
+	// if success {
+	// 	fmt.Println(data)
+	// 	// TODO: Do something about the error
+	// 	WriteToDB(user, password, "DailySummary_RAW", summary)
+	// }
 
 	fmt.Println("done")
 }
 
-func WriteToDB[V LeaderboardResults | DailyResults](user string, password string, collection string, data V) {
+func DataMigration(user string, password string) {
+
+	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	connectionString := fmt.Sprintf("mongodb+srv://%s:%s@cluster0.ie1zp2i.mongodb.net/?retryWrites=true&w=majority", user, password)
+	clientOptions := options.Client().
+		ApplyURI(connectionString).
+		SetServerAPIOptions(serverAPIOptions)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rcol := client.Database("Hotworx").Collection("Leaderboard_RAW")
+
+	cursor, err := rcol.Find(ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var results []hotworxData.LeaderboardResults
+	if err = cursor.All(ctx, &results); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, leader := range results {
+		y := make([]interface{}, len(leader.Leaderboard))
+		for i, v := range leader.Leaderboard {
+			v.Date = leader.Date
+			y[i] = v
+		}
+		WriteMultipleToDB(user, password, "Leaderboard", y)
+	}
+
+	client.Disconnect(ctx)
+}
+
+func WriteToDB[V hotworxData.LeaderboardResults | hotworxData.DailyResults | []hotworxData.Leaderboard](user string, password string, collection string, data V) {
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
 	connectionString := fmt.Sprintf("mongodb+srv://%s:%s@cluster0.ie1zp2i.mongodb.net/?retryWrites=true&w=majority", user, password)
 	clientOptions := options.Client().
@@ -100,7 +117,31 @@ func WriteToDB[V LeaderboardResults | DailyResults](user string, password string
 	results, e := col.InsertOne(ctx, data)
 
 	if e != nil {
+		fmt.Println("Results All: ", e)
+	} else {
+		fmt.Println("Results All: ", results)
+	}
+	client.Disconnect(ctx)
+}
 
+func WriteMultipleToDB(user string, password string, collection string, data []interface{}) {
+	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
+	connectionString := fmt.Sprintf("mongodb+srv://%s:%s@cluster0.ie1zp2i.mongodb.net/?retryWrites=true&w=majority", user, password)
+	clientOptions := options.Client().
+		ApplyURI(connectionString).
+		SetServerAPIOptions(serverAPIOptions)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	col := client.Database("Hotworx").Collection(collection)
+
+	results, e := col.InsertMany(ctx, data)
+
+	if e != nil {
 		fmt.Println("Results All: ", e)
 	} else {
 		fmt.Println("Results All: ", results)
@@ -120,7 +161,7 @@ func CallAPI(url string, userId string) ([]byte, bool) {
 		fmt.Println(err)
 		return nil, true
 	}
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json,text/html,application/xhtml+xml,application/xml")
 
 	res, err := httpClient.Do(req)
 	if err != nil {
@@ -129,7 +170,7 @@ func CallAPI(url string, userId string) ([]byte, bool) {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
 		body = nil
@@ -140,16 +181,22 @@ func CallAPI(url string, userId string) ([]byte, bool) {
 	return body, rc
 }
 
-func GetDailySummary(hotworx_api string, writeFile bool) (DailyResults, bool) {
+func GetDailySummary(hotworx_api string, writeFile bool) (hotworxData.DailyResults, bool) {
 	rc := false
 	const layout = "Jan 02,2006"
 	t := time.Now()
 
-	url := fmt.Sprintf("%s?action=get_summary&user_id=841f1f22368a4b5d39b4838016ea5a51&date=%s", hotworx_api, t.Format(layout))
+	params := url.Values{}
+	params.Add("action", "get_summary")
+	params.Add("user_id", "841f1f22368a4b5d39b4838016ea5a51")
+	params.Add("date", t.Format(layout))
+
+	url := fmt.Sprintf("%s?%s", hotworx_api, params.Encode())
+	//url := fmt.Sprintf("%s?action=get_summary&user_id=841f1f22368a4b5d39b4838016ea5a51", hotworx_api)
 
 	body, rc := CallAPI(url, "841f1f22368a4b5d39b4838016ea5a51")
 
-	var data DailyResults
+	var data hotworxData.DailyResults
 
 	if err := json.Unmarshal(body, &data); err != nil {
 		fmt.Println("failed to unmarshal:", err)
@@ -160,19 +207,24 @@ func GetDailySummary(hotworx_api string, writeFile bool) (DailyResults, bool) {
 			jsonString, _ := PrettyString(string(body))
 			fileName := GetFilenameDate("Daily")
 			byteData := []byte(jsonString)
-			err = ioutil.WriteFile(fileName, byteData, 0644)
+			os.WriteFile(fileName, byteData, 0644)
 		}
 	}
 	return data, rc
 }
 
-func GetDailyLeaderboard(hotworx_api string, writeFile bool) (LeaderboardResults, bool) {
+func GetDailyLeaderboard(hotworx_api string, writeFile bool) (hotworxData.LeaderboardResults, bool) {
 	rc := false
-	url := fmt.Sprintf("%s?action=get_user_leaderboard_local&user_id=841f1f22368a4b5d39b4838016ea5a51", hotworx_api)
+
+	params := url.Values{}
+	params.Add("action", "get_user_leaderboard_local")
+	params.Add("user_id", "841f1f22368a4b5d39b4838016ea5a51")
+
+	url := fmt.Sprintf("%s?%s", hotworx_api, params.Encode())
 
 	body, rc := CallAPI(url, "841f1f22368a4b5d39b4838016ea5a51")
 
-	var data LeaderboardResults
+	var data hotworxData.LeaderboardResults
 
 	if err := json.Unmarshal(body, &data); err != nil {
 		fmt.Println("failed to unmarshal:", err)
@@ -183,11 +235,26 @@ func GetDailyLeaderboard(hotworx_api string, writeFile bool) (LeaderboardResults
 			jsonString, _ := PrettyString(string(body))
 			fileName := GetFilenameDate("data")
 			byteData := []byte(jsonString)
-			err = ioutil.WriteFile(fileName, byteData, 0644)
+			os.WriteFile(fileName, byteData, 0644)
 		}
 	}
 	return data, rc
 }
+
+// func GetData[V hotworxData.LeaderboardResults | hotworxData.DailyResults](writeFile bool, body []byte, data V) {
+// 	if err := json.Unmarshal(body, &data); err != nil {
+// 		fmt.Println("failed to unmarshal:", err)
+// 	} else {
+// 		data.Date = time.Now()
+// 		if writeFile {
+// 			body, _ := json.Marshal(data)
+// 			jsonString, _ := PrettyString(string(body))
+// 			fileName := GetFilenameDate("data")
+// 			byteData := []byte(jsonString)
+// 			os.WriteFile(fileName, byteData, 0644)
+// 		}
+// 	}
+// }
 
 func GetFilenameDate(prefix string) string {
 	// Use layout string for time format.

@@ -1,4 +1,4 @@
-module github.com/xyzuser/go-demoproject
+module github.com/bretcline/Hotworx_Go
 
 go 1.19
 
@@ -6,9 +6,6 @@ require (
 	github.com/denisenkom/go-mssqldb v0.12.3
 	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.11.1
-)
-
-require (
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect

@@ -1,0 +1,169 @@
+{
+    "_id": ObjectId("63d57dc3f5ac12ebd7452ee3"),
+    "status": true,
+    "message1": "success",
+    "leaderboard": [
+        {
+            "user_id": "124551",
+            "TotalCaloriesBurnt": "18881",
+            "reward": "gold",
+            "username": "Matt K. ",
+            "selft_entry": "no"
+        },
+        {
+            "user_id": "245879",
+            "TotalCaloriesBurnt": "14781",
+            "reward": "silver",
+            "username": "Bret",
+            "selft_entry": "no"
+        },
+        {
+            "user_id": "405939",
+            "TotalCaloriesBurnt": "13453",
+            "reward": "bronze",
+            "username": "Madison Trippie",
+            "selft_entry": "no"
+        },
+        {
+            "user_id": "245879",
+            "TotalCaloriesBurnt": "14781",
+            "reward": "279",
+            "selft_entry": "yes",
+            "username": "Bret"
+        },
+        {
+            "user_id": "405939",
+            "TotalCaloriesBurnt": "13453",
+            "reward": "386",
+            "selft_entry": "no",
+            "username": "Madison Trippie"
+        },
+        {
+            "user_id": "144703",
+            "TotalCaloriesBurnt": "10980",
+            "reward": "749",
+            "selft_entry": "no",
+            "username": "ALLI"
+        },
+        {
+            "user_id": "260362",
+            "TotalCaloriesBurnt": "10218",
+            "reward": "950",
+            "selft_entry": "no",
+            "username": "Johnny Torres "
+        },
+        {
+            "user_id": "413049",
+            "TotalCaloriesBurnt": "9568",
+            "reward": "1158",
+            "selft_entry": "no",
+            "username": "Erin Washburn"
+        },
+        {
+            "user_id": "205705",
+            "TotalCaloriesBurnt": "9158",
+            "reward": "1316",
+            "selft_entry": "no",
+            "username": "Sarah  M"
+        },
+        {
+            "user_id": "372461",
+            "TotalCaloriesBurnt": "7863",
+            "reward": "2056",
+            "selft_entry": "no",
+            "username": "Heather Cline"
+        },
+        {
+            "user_id": "124336",
+            "TotalCaloriesBurnt": "6476",
+            "reward": "3289",
+            "selft_entry": "no",
+            "username": "Lisa"
+        },
+        {
+            "user_id": "134333",
+            "TotalCaloriesBurnt": "5053",
+            "reward": "5394",
+            "selft_entry": "no",
+            "username": "Jared"
+        },
+        {
+            "user_id": "404909",
+            "TotalCaloriesBurnt": "4514",
+            "reward": "6533",
+            "selft_entry": "no",
+            "username": "Alison Richardson"
+        },
+        {
+            "user_id": "349005",
+            "TotalCaloriesBurnt": "4416",
+            "reward": "6772",
+            "selft_entry": "no",
+            "username": "Alex "
+        },
+        {
+            "user_id": "259573",
+            "TotalCaloriesBurnt": "4321",
+            "reward": "7026",
+            "selft_entry": "no",
+            "username": "JONES CHARITY"
+        },
+        {
+            "user_id": "160436",
+            "TotalCaloriesBurnt": "4309",
+            "reward": "7049",
+            "selft_entry": "no",
+            "username": "Katie"
+        },
+        {
+            "user_id": "120229",
+            "TotalCaloriesBurnt": "4239",
+            "reward": "7259",
+            "selft_entry": "no",
+            "username": "Melisa Morgan"
+        },
+        {
+            "user_id": "417747",
+            "TotalCaloriesBurnt": "4222",
+            "reward": "7303",
+            "selft_entry": "no",
+            "username": "Debbie Strouse"
+        },
+        {
+            "user_id": "160824",
+            "TotalCaloriesBurnt": "4151",
+            "reward": "7501",
+            "selft_entry": "no",
+            "username": "Sandy"
+        },
+        {
+            "user_id": "381071",
+            "TotalCaloriesBurnt": "3479",
+            "reward": "9820",
+            "selft_entry": "no",
+            "username": "Natalie Heredia"
+        },
+        {
+            "user_id": "155871",
+            "TotalCaloriesBurnt": "3434",
+            "reward": "9979",
+            "selft_entry": "no",
+            "username": "KARFS SHILO"
+        },
+        {
+            "user_id": "259506",
+            "TotalCaloriesBurnt": "3433",
+            "reward": "9981",
+            "selft_entry": "no",
+            "username": "COLEMAN LYDIA"
+        },
+        {
+            "user_id": "202356",
+            "TotalCaloriesBurnt": "3299",
+            "reward": "10492",
+            "selft_entry": "no",
+            "username": "Sara Rhianna Carter"
+        }
+    ],
+    "Date": ISODate("2023-01-19T06:00:00Z")
+}
